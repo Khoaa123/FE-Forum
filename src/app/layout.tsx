@@ -1,6 +1,14 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "@/components/theme-provider";
+import Header from "@/components/header/Header";
+import Footer from "@/components/footer/Footer";
+import ProgressBarProvider from "@/components/progressBarProvider/ProgressBarProvider";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { CookiesProvider } from "next-client-cookies/server";
+import { ReactQueryProvider } from "@/components/ReactQueryProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -15,8 +23,28 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={inter.className}>{children}</body>
-    </html>
+    <CookiesProvider>
+      <ReactQueryProvider>
+        <html lang="en">
+          <body className={inter.className}>
+            <div className="flex h-screen flex-col">
+              <ThemeProvider
+                attribute="class"
+                defaultTheme="light"
+                enableSystem
+                disableTransitionOnChange
+              >
+                <Header />
+                <ProgressBarProvider>{children}</ProgressBarProvider>
+                <div className="mt-auto">
+                  <Footer />
+                </div>
+                <ToastContainer closeOnClick draggable />
+              </ThemeProvider>
+            </div>
+          </body>
+        </html>
+      </ReactQueryProvider>
+    </CookiesProvider>
   );
 }
