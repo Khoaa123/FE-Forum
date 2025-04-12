@@ -30,8 +30,8 @@ const RegisterForm = () => {
         }),
       }
     );
-    if (res.status === 201) {
-      toast.success("Register success");
+    if (res.status === 200) {
+      toast.success("Đăng ký thành công");
       router.push("/login");
     } else {
       toast.error("Register failed");
@@ -45,7 +45,7 @@ const RegisterForm = () => {
             <Card className="my-3 overflow-hidden rounded-none border-none">
               <CardHeader className="bg-reaction-comment flex-row space-y-0 p-0 outline-none dark:bg-[#1d1f20]">
                 <button className="px-3 py-2 text-2xl font-medium text-white transition hover:bg-[#e8f4fc1a]">
-                  Đăng nhập
+                  Đăng ký
                 </button>
               </CardHeader>
               <CardContent className="p-0">

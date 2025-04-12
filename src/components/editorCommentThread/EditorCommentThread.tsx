@@ -6,13 +6,17 @@ import { useCookies } from "next-client-cookies";
 import { useUserStore } from "@/store/User";
 import { toast } from "react-toastify";
 
+type EditorCommentThreadProps = {
+  threadId: number;
+  onCommentAdded: (newComment: any) => void;
+  parentCommentId?: number | null; // Thêm prop này để xử lý reply
+};
+
 const EditorCommentThread = ({
   threadId,
   onCommentAdded,
-}: {
-  threadId: number;
-  onCommentAdded: (newComment: any) => void;
-}) => {
+  parentCommentId,
+}: EditorCommentThreadProps) => {
   const [content, setContent] = useState<string>("");
 
   const { setDisplayName, userId } = useUserStore();
@@ -40,7 +44,7 @@ const EditorCommentThread = ({
           Content: content,
           ThreadId: threadId,
           UserId: userId,
-          ParentCommentId: null,
+          ParentCommentId: parentCommentId ?? null,
         }),
       }
     );
@@ -49,9 +53,11 @@ const EditorCommentThread = ({
     if (res.status === 201) {
       toast.success("Đăng comment thành công");
       setContent("");
-      const newComment = await data.data;
+      const newComment = data.data;
       onCommentAdded(newComment);
-      console.log(data.message || "Error occurred");
+    } else {
+      console.error(data.message || "Error occurred");
+      toast.error("Đăng comment thất bại");
     }
   };
 

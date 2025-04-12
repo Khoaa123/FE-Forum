@@ -14,6 +14,7 @@ import Editor from "../editor/Editor";
 import { toast } from "react-toastify";
 import { useUserStore } from "@/store/User";
 import { useCookies } from "next-client-cookies";
+import { useRouter } from "next/navigation";
 
 const EditorPostThread = ({ forumId }: { forumId: number }) => {
   const [title, setTitle] = useState<string>("");
@@ -22,6 +23,7 @@ const EditorPostThread = ({ forumId }: { forumId: number }) => {
   const [isSticky, setIsSticky] = useState(false);
   const { setDisplayName, userId } = useUserStore();
   const cookies = useCookies();
+  const router = useRouter();
 
   useEffect(() => {
     const token = cookies.get("accessToken");
@@ -49,6 +51,9 @@ const EditorPostThread = ({ forumId }: { forumId: number }) => {
     const data = await res.json();
     if (res.status === 201) {
       toast.success("Tạo thread thành công");
+      console.log(data);
+      const threadId = data.data.id;
+      router.push(`/thread/${threadId}`);
     } else {
       toast.error(data.message || "Đã xảy ra lỗi");
     }

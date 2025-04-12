@@ -39,6 +39,7 @@ export type Comment = {
   createdAt: string;
   threadName: string;
   userName: string;
+  userId: string;
   avatarUrl: string;
   replies: any[];
   reactions: Reaction[];

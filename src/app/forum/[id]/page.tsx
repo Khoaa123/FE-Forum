@@ -36,7 +36,7 @@ type Thread = {
 
 const fetchThreadsByForum = async (forumId: number, pageNumber: number) => {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/Thread/ThreadsByForum?id=${forumId}&pagenumber=${pageNumber}&pagesize=1`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/Thread/ThreadsByForum?id=${forumId}&pagenumber=${pageNumber}&pagesize=3`,
     {
       cache: "no-store",
     }
@@ -46,6 +46,35 @@ const fetchThreadsByForum = async (forumId: number, pageNumber: number) => {
     threads: data.data,
     totalPages: data.totalPages,
   };
+};
+
+const SkeletonLoader = () => {
+  return (
+    <div className="my-3">
+      {[...Array(3)].map((_, index) => (
+        <div
+          key={index}
+          className="grid grid-cols-6 gap-2 border-b border-[#d3d5d7] px-4 py-2 dark:border-[#3e4346]"
+        >
+          <div className="col-span-4 flex gap-3">
+            <div className="h-[50px] w-[50px] animate-pulse rounded-full bg-gray-300"></div>
+            <div className="flex-1">
+              <div className="mb-2 h-[20px] w-1/2 animate-pulse rounded bg-gray-300"></div>
+              <div className="h-[15px] w-1/3 animate-pulse rounded bg-gray-300"></div>
+            </div>
+          </div>
+          <div className="col-span-1">
+            <div className="mb-2 h-[15px] w-1/2 animate-pulse rounded bg-gray-300"></div>
+            <div className="h-[15px] w-1/3 animate-pulse rounded bg-gray-300"></div>
+          </div>
+          <div className="col-span-1">
+            <div className="mb-2 h-[15px] w-1/2 animate-pulse rounded bg-gray-300"></div>
+            <div className="h-[30px] w-[30px] animate-pulse rounded-full bg-gray-300"></div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 };
 
 const ForumDetail = ({ params }: { params: { id: number } }) => {
@@ -60,7 +89,12 @@ const ForumDetail = ({ params }: { params: { id: number } }) => {
   });
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="container">
+        {" "}
+        <SkeletonLoader />
+      </div>
+    );
   }
 
   if (error) {

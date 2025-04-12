@@ -34,7 +34,7 @@ const LoginForm = () => {
 
       setDisplayName(data.data.accessToken);
 
-      toast.success("Login success");
+      toast.success("Đăng nhập thành công");
       router.push("/");
     } else {
       toast.error("Login failed");
@@ -43,7 +43,7 @@ const LoginForm = () => {
 
   return (
     <>
-      <div className="container m-auto">
+      <div className="container">
         <div className="my-3">
           <div>
             <Card className="my-3 overflow-hidden rounded-none border-none">

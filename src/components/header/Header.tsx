@@ -70,21 +70,18 @@ const Header = () => {
                         asChild
                         className="focus-visible:ring-0"
                       >
-                        <Button className="rounded-none text-white hover:bg-[#354f52] dark:text-[#8cb6de]">
+                        <Button className="rounded-none bg-[#14141426] text-sky-200 transition duration-200 hover:bg-[#0f4367] dark:text-[#8cb6de]">
                           {displayName}
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent className="w-56">
-                        <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                        <DropdownMenuLabel>Quản lý cá nhân</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup>
                           <Link href={`/profile/${userId}`}>
-                            <DropdownMenuItem>
-                              Profile
-                              <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-                            </DropdownMenuItem>
+                            <DropdownMenuItem>Trang cá nhân</DropdownMenuItem>
                           </Link>
-                          <DropdownMenuItem>
+                          {/* <DropdownMenuItem>
                             Billing
                             <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
                           </DropdownMenuItem>
@@ -95,11 +92,11 @@ const Header = () => {
                           <DropdownMenuItem>
                             Keyboard shortcuts
                             <DropdownMenuShortcut>⌘K</DropdownMenuShortcut>
-                          </DropdownMenuItem>
+                          </DropdownMenuItem> */}
                         </DropdownMenuGroup>
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup>
-                          <DropdownMenuItem>Team</DropdownMenuItem>
+                          {/* <DropdownMenuItem>Team</DropdownMenuItem>
                           <DropdownMenuSub>
                             <DropdownMenuSubTrigger>
                               Invite users
@@ -116,25 +113,24 @@ const Header = () => {
                           <DropdownMenuItem>
                             New Team
                             <DropdownMenuShortcut>⌘+T</DropdownMenuShortcut>
-                          </DropdownMenuItem>
+                          </DropdownMenuItem> */}
                         </DropdownMenuGroup>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem>GitHub</DropdownMenuItem>
+                        {/* <DropdownMenuSeparator /> */}
+                        {/* <DropdownMenuItem>GitHub</DropdownMenuItem>
                         <DropdownMenuItem>Support</DropdownMenuItem>
-                        <DropdownMenuItem disabled>API</DropdownMenuItem>
-                        <DropdownMenuSeparator />
+                        <DropdownMenuItem disabled>API</DropdownMenuItem> */}
+                        {/* <DropdownMenuSeparator /> */}
                         <DropdownMenuItem onClick={handleLogout}>
-                          Log out
-                          <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
+                          Đăng xuất
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
                   {/* </Button> */}
-                  <Button className="rounded-none text-white hover:bg-[#354f52] dark:text-[#8cb6de]">
+                  <Button className="rounded-none bg-[#14141426] text-sky-200 transition duration-200 hover:bg-[#0f4367] dark:text-[#8cb6de]">
                     <CiMail size={20} />
                   </Button>
-                  <Button className="rounded-none text-white hover:bg-[#354f52] dark:text-[#8cb6de]">
+                  <Button className="rounded-none bg-[#14141426] text-sky-200 transition duration-200 hover:bg-[#0f4367] dark:text-[#8cb6de]">
                     <CiBellOn size={20} />
                   </Button>
                 </div>
@@ -171,14 +167,14 @@ const Header = () => {
                 </Button>
               </div>
               <div>
+                <Button className="h-0 bg-transparent p-0">Tìm kiếm</Button>
+              </div>
+              {/* <div>
                 <Button className="h-0 bg-transparent p-0">Post mới</Button>
               </div>
               <div>
                 <Button className="h-0 bg-transparent p-0">Post mới</Button>
-              </div>
-              <div>
-                <Button className="h-0 bg-transparent p-0">Post mới</Button>
-              </div>
+              </div> */}
             </div>
           </div>
         </Card>

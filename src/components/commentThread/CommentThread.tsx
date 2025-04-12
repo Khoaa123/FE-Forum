@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import Image from "next/image";
 import { formatDate } from "@/utils/FormatDate";
@@ -24,17 +24,19 @@ const EditorCommentThread = dynamic(
 );
 
 const CommentThread = ({ thread }: ThreadProp) => {
-  const findParentComment = (parentId: number) => {
-    return thread.comments.find((comment: Comment) => comment.id === parentId);
-  };
+  const [comments, setComments] = useState<Comment[]>(thread.comments);
+  const [replyTo, setReplyTo] = useState<number | null>(null);
+  const [parentCommentsCache, setParentCommentsCache] = useState<
+    Record<number, Comment>
+  >({});
+  const [loadingParents, setLoadingParents] = useState<boolean>(false);
 
-  const [comments, setComments] = useState(thread.comments);
+  const userId = getUserIdFromToken();
+
   const addNewComment = (newComment: Comment) => {
     setComments((prevComments) => [...prevComments, newComment]);
+    setReplyTo(null);
   };
-
-  // const { userId } = useUserStore();
-  const userId = getUserIdFromToken();
 
   const handleReaction = async (commentId: number, type: number) => {
     try {
@@ -57,9 +59,89 @@ const CommentThread = ({ thread }: ThreadProp) => {
     }
   };
 
-  const { setIdComment } = useCommentStore();
+  const { setIdComment, idComment } = useCommentStore();
+
+  useEffect(() => {
+    if (idComment) {
+      setReplyTo(idComment);
+    }
+  }, [idComment]);
 
   const { data: userInfo, isLoading, isError } = useFetchUser(userId || "");
+
+  // Hàm fetch thông tin comment cha từ API
+  const fetchParentComment = useCallback(
+    async (parentId: number) => {
+      if (parentCommentsCache[parentId]) {
+        return parentCommentsCache[parentId];
+      }
+
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/Comment/${parentId}`
+        );
+        if (!res.ok) throw new Error("Failed to fetch parent comment");
+        const data = await res.json();
+        const parentComment: Comment = data.data; // Đảm bảo khớp với type Comment
+        setParentCommentsCache((prev) => ({
+          ...prev,
+          [parentId]: parentComment,
+        }));
+        return parentComment;
+      } catch (error) {
+        console.error(`Error fetching parent comment ${parentId}:`, error);
+        return null;
+      }
+    },
+    [parentCommentsCache]
+  );
+
+  // Fetch tất cả các comment cha khi danh sách comments thay đổi
+  useEffect(() => {
+    const fetchAllParentComments = async () => {
+      setLoadingParents(true);
+      const parentIds = comments
+        .filter(
+          (comment) =>
+            comment.parentCommentId !== undefined &&
+            comment.parentCommentId !== null
+        )
+        .map((comment) => comment.parentCommentId!)
+        .filter(
+          (id) =>
+            !thread.comments.some((c) => c.id === id) &&
+            !comments.some((c) => c.id === id) &&
+            !parentCommentsCache[id]
+        );
+
+      const uniqueParentIds = parentIds.filter(
+        (id, index) => parentIds.indexOf(id) === index
+      );
+
+      if (uniqueParentIds.length > 0) {
+        const fetchPromises = uniqueParentIds.map((parentId) =>
+          fetchParentComment(parentId)
+        );
+        await Promise.all(fetchPromises);
+      }
+      setLoadingParents(false);
+    };
+
+    fetchAllParentComments();
+  }, [comments, thread.comments, fetchParentComment]);
+
+  // Hàm tìm comment cha
+  const findParentComment = useCallback(
+    (parentId: number) => {
+      return (
+        thread.comments.find((comment: Comment) => comment.id === parentId) ||
+        comments.find((comment: Comment) => comment.id === parentId) ||
+        parentCommentsCache[parentId] ||
+        null
+      );
+    },
+    [thread.comments, comments, parentCommentsCache]
+  );
 
   return (
     <>
@@ -68,6 +150,10 @@ const CommentThread = ({ thread }: ThreadProp) => {
           const userReaction = comment.reactions.find(
             (reaction) => reaction.userId === userId
           );
+          const parentComment = comment.parentCommentId
+            ? findParentComment(comment.parentCommentId)
+            : null;
+
           return (
             <Card
               className="my-2 overflow-hidden rounded-none border-none"
@@ -93,18 +179,24 @@ const CommentThread = ({ thread }: ThreadProp) => {
                   <div className="py-2">
                     {comment.parentCommentId !== undefined && (
                       <div className="my-2 border border-l-[3px] border-l-amber-500 bg-gray-100 dark:bg-[#232627]">
-                        <div className="bg-stone-50 dark:bg-[#1D1F20]">
-                          <p className="px-2 py-1 text-amber-400">
-                            {
-                              findParentComment(comment.parentCommentId)
-                                ?.userName
-                            }
-                            trả lời:
+                        {loadingParents ? (
+                          <p className="px-2 py-1 text-gray-500">Đang tải...</p>
+                        ) : parentComment ? (
+                          <>
+                            <div className="bg-stone-50 dark:bg-[#1D1F20]">
+                              <p className="px-2 py-1 text-amber-400">
+                                {parentComment.userName} trả lời:
+                              </p>
+                            </div>
+                            <p className="px-2 py-1 text-black dark:text-gray-300">
+                              {parentComment.content}
+                            </p>
+                          </>
+                        ) : (
+                          <p className="px-2 py-1 text-gray-500">
+                            Không tìm thấy comment cha
                           </p>
-                        </div>
-                        <p className="px-2 py-1 text-black dark:text-gray-300">
-                          {findParentComment(comment.parentCommentId)?.content}
-                        </p>
+                        )}
                       </div>
                     )}
                     <div
@@ -112,9 +204,9 @@ const CommentThread = ({ thread }: ThreadProp) => {
                       dangerouslySetInnerHTML={{ __html: comment.content }}
                     ></div>
                   </div>
-                  {userInfo && (
+                  {userInfo && comment.userId !== userId && (
                     <div className="mt-auto flex items-center justify-between">
-                      <p>Report</p>
+                      <p className="cursor-pointer">Report</p>
                       <div className="flex gap-5">
                         <div
                           className={`flex cursor-pointer items-center gap-2 ${
@@ -168,6 +260,7 @@ const CommentThread = ({ thread }: ThreadProp) => {
                 <EditorCommentThread
                   threadId={thread.id}
                   onCommentAdded={addNewComment}
+                  parentCommentId={replyTo}
                 />
               </div>
             </CardContent>

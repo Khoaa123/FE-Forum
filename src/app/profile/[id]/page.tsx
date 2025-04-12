@@ -271,7 +271,7 @@ const Profile = () => {
                   >
                     Thread đã đăng
                   </button>{" "}
-                  <button
+                  {/* <button
                     className={`${
                       isActive === "Comment" &&
                       "border-b-[3px] border-sky-300 bg-[#e8f4fc1a] !text-white"
@@ -279,7 +279,7 @@ const Profile = () => {
                     onClick={() => setIsActive("Comment")}
                   >
                     Comment
-                  </button>
+                  </button> */}
                 </div>
               </CardContent>
             </Card>

@@ -17,6 +17,27 @@ import avatar from "@images/avatardefault.png";
 import { getUserIdFromToken } from "@/utils/Helpers";
 import useFetchUser from "@/hooks/useFetchUser";
 
+const SkeletonLoader = () => {
+  return (
+    <div className="my-3">
+      <div className="animate-pulse">
+        <div className="mb-4 h-6 w-1/3 rounded bg-gray-300"></div>
+        <div className="mb-4 flex items-center gap-2">
+          <div className="h-6 w-16 rounded bg-gray-300"></div>
+          <div className="h-8 w-2/3 rounded bg-gray-300"></div>
+        </div>
+        <div className="mb-4 flex items-center gap-2">
+          <div className="h-4 w-1/4 rounded bg-gray-300"></div>
+          <div className="h-4 w-1/4 rounded bg-gray-300"></div>
+        </div>
+        <div className="mb-4 h-40 w-full rounded bg-gray-300"></div>
+        {/* <div className="mb-4 h-6 w-1/3 rounded bg-gray-300"></div>
+        <div className="h-6 w-1/2 rounded bg-gray-300"></div> */}
+      </div>
+    </div>
+  );
+};
+
 const ThreadComponent = () => {
   const params = useParams();
   const searchParams = useSearchParams();
@@ -44,7 +65,11 @@ const ThreadComponent = () => {
   const { data: userInfo } = useFetchUser(userId || "");
 
   if (isLoading) {
-    return <div>Saiii...</div>;
+    return (
+      <div className="container">
+        <SkeletonLoader />
+      </div>
+    );
   }
 
   if (error) {
@@ -103,7 +128,6 @@ const ThreadComponent = () => {
               <p>{formatDate(thread.createdAt)}</p>
             </div>
           </div>
-          {/* <PaginationPage totalPages={totalPages} pageNumber={pageNumber} /> */}
           <div className="my-4">
             {pageNumber === 1 && (
               <Card className="my-2 overflow-hidden rounded-none border-none">
@@ -148,6 +172,8 @@ const ThreadComponent = () => {
             )}
             <div className="my-2 h-[0.1px] w-full bg-teal-100 dark:bg-[#44494c]"></div>
             <CommentThread thread={thread} />
+            {/* Chỉ giữ Pagination ở đây */}
+            <PaginationPage totalPages={totalPages} pageNumber={pageNumber} />
           </div>
         </div>
       </div>

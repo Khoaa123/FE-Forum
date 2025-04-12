@@ -36,9 +36,9 @@ export default function RootLayout({
               >
                 <Header />
                 <ProgressBarProvider>{children}</ProgressBarProvider>
-                <div className="mt-auto">
+                {/* <div className="mt-auto">
                   <Footer />
-                </div>
+                </div> */}
                 <ToastContainer closeOnClick draggable />
               </ThemeProvider>
             </div>
