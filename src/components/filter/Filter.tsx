@@ -47,7 +47,7 @@ const Filter = () => {
                   </SelectContent>
                 </Select>
               </MenubarItem>
-              <MenubarItem className="block focus:bg-transparent">
+              {/* <MenubarItem className="block focus:bg-transparent">
                 <p className="mb-2">Thời gian</p>
                 <Select>
                   <SelectTrigger className="w-[120px] bg-transparent focus:ring-0 focus:ring-offset-0">
@@ -61,7 +61,7 @@ const Filter = () => {
                     </SelectGroup>
                   </SelectContent>
                 </Select>
-              </MenubarItem>
+              </MenubarItem> */}
               <MenubarItem className="focus:bg-transparent">
                 <Button className="bg-[#4D5D80] text-white hover:bg-cyan-600">
                   Lọc

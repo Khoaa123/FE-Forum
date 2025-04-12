@@ -37,8 +37,13 @@ const LoginForm = () => {
       toast.success("Đăng nhập thành công");
       router.push("/");
     } else {
-      toast.error("Login failed");
+      toast.error("Đăng nhập thất bại");
     }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    login();
   };
 
   return (
@@ -53,53 +58,55 @@ const LoginForm = () => {
                 </button>
               </CardHeader>
               <CardContent className="p-0">
-                <div className="grid lg:grid-cols-3">
-                  <div className="col-span-1 border-r border-[#cbcdd0] bg-[#E2E3E5] px-3 py-7 text-right text-black">
-                    Tài khoản:
-                  </div>
-                  <div className="col-span-2 bg-[#EBECED] px-3 py-5">
-                    <input
-                      type="text"
-                      className="w-full rounded-md border border-solid border-[#b5b9bd] bg-[#e5eaf0] p-2 text-black focus:border-sky-500 focus-visible:outline-none"
-                      value={userName}
-                      onChange={(e) => setUserName(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div className="grid lg:grid-cols-3">
-                  <div className="col-span-1 border-r border-[#cbcdd0] bg-[#E2E3E5] px-3 py-7 text-right text-black">
-                    Mật khẩu:
-                  </div>
-                  <div className="col-span-2 bg-[#EBECED] px-3 py-5">
-                    <input
-                      type="password"
-                      className="w-full rounded-md border border-solid border-[#b5b9bd] bg-[#e5eaf0] p-2 text-black focus:border-sky-500 focus-visible:outline-none"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid lg:grid-cols-3">
-                  <div className="col-span-1 border-r border-[#cbcdd0] bg-[#E2E3E5] px-3 py-7 text-right text-black"></div>
-                  <div className="col-span-2 bg-[#EBECED] px-3 py-5">
-                    <Button
-                      className="gap-2 bg-[#5c7099] text-white hover:bg-[#4d5d80]"
-                      onClick={login}
-                    >
-                      <LuLogIn color="white" size={20} />
-                      Đăng nhập
-                    </Button>
-                    <div className="mt-3">
-                      <p className="text-black">
-                        Chưa có tài khoản?{" "}
-                        <Link href="/register" className="text-blue-500">
-                          Đăng ký
-                        </Link>
-                      </p>
+                <form onSubmit={handleSubmit}>
+                  <div className="grid lg:grid-cols-3">
+                    <div className="col-span-1 border-r border-[#cbcdd0] bg-[#E2E3E5] px-3 py-7 text-right text-black">
+                      Tài khoản:
+                    </div>
+                    <div className="col-span-2 bg-[#EBECED] px-3 py-5">
+                      <input
+                        type="text"
+                        className="w-full rounded-md border border-solid border-[#b5b9bd] bg-[#e5eaf0] p-2 text-black focus:border-sky-500 focus-visible:outline-none"
+                        value={userName}
+                        onChange={(e) => setUserName(e.target.value)}
+                        autoFocus
+                      />
                     </div>
                   </div>
-                </div>
+                  <div className="grid lg:grid-cols-3">
+                    <div className="col-span-1 border-r border-[#cbcdd0] bg-[#E2E3E5] px-3 py-7 text-right text-black">
+                      Mật khẩu:
+                    </div>
+                    <div className="col-span-2 bg-[#EBECED] px-3 py-5">
+                      <input
+                        type="password"
+                        className="w-full rounded-md border border-solid border-[#b5b9bd] bg-[#e5eaf0] p-2 text-black focus:border-sky-500 focus-visible:outline-none"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid lg:grid-cols-3">
+                    <div className="col-span-1 border-r border-[#cbcdd0] bg-[#E2E3E5] px-3 py-7 text-right text-black"></div>
+                    <div className="col-span-2 bg-[#EBECED] px-3 py-5">
+                      <Button
+                        type="submit"
+                        className="gap-2 bg-[#5c7099] text-white hover:bg-[#4d5d80]"
+                      >
+                        <LuLogIn color="white" size={20} />
+                        Đăng nhập
+                      </Button>
+                      <div className="mt-3">
+                        <p className="text-black">
+                          Chưa có tài khoản?{" "}
+                          <Link href="/register" className="text-blue-500">
+                            Đăng ký
+                          </Link>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </form>
               </CardContent>
             </Card>
           </div>

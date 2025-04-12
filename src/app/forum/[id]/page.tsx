@@ -36,7 +36,7 @@ type Thread = {
 
 const fetchThreadsByForum = async (forumId: number, pageNumber: number) => {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/Thread/ThreadsByForum?id=${forumId}&pagenumber=${pageNumber}&pagesize=3`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/Thread/ThreadsByForum?id=${forumId}&pagenumber=${pageNumber}&pagesize=5`,
     {
       cache: "no-store",
     }
@@ -140,9 +140,9 @@ const ForumDetail = ({ params }: { params: { id: number } }) => {
           </div>
           <div>
             <Card className="my-3 overflow-hidden rounded-none border-none shadow-none">
-              <CardHeader className="border-b border-[#d3d5d7] bg-fuchsia-50 px-4 py-1 outline-none dark:border-[#3e4346] dark:bg-[#1d1f20]">
+              {/* <CardHeader className="border-b border-[#d3d5d7] bg-fuchsia-50 px-4 py-1 outline-none dark:border-[#3e4346] dark:bg-[#1d1f20]">
                 <Filter />
-              </CardHeader>
+              </CardHeader> */}
               <CardContent className="p-0">
                 {threads.map((thread: Thread) => (
                   <Link

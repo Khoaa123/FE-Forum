@@ -19,32 +19,26 @@ const PaginationPage = ({
   pageNumber: number;
 }) => {
   const getVisiblePages = () => {
-    const delta = 2; // Number of pages to show before and after current page
+    const delta = 2;
     const pages = [];
 
-    // Always add page 1
     pages.push(1);
 
-    // Calculate range around current page
     let rangeStart = Math.max(2, pageNumber - delta);
     let rangeEnd = Math.min(totalPages - 1, pageNumber + delta);
 
-    // Add ellipsis after page 1 if needed
     if (rangeStart > 2) {
       pages.push("ellipsis1");
     }
 
-    // Add pages around current page
     for (let i = rangeStart; i <= rangeEnd; i++) {
       pages.push(i);
     }
 
-    // Add ellipsis before last page if needed
     if (rangeEnd < totalPages - 1) {
       pages.push("ellipsis2");
     }
 
-    // Always add last page if not already included
     if (totalPages > 1) {
       pages.push(totalPages);
     }
