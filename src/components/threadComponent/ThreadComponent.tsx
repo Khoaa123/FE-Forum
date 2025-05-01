@@ -172,7 +172,9 @@ const ThreadComponent = () => {
             )}
             <div className="my-2 h-[0.1px] w-full bg-teal-100 dark:bg-[#44494c]"></div>
             <CommentThread thread={thread} />
-            <PaginationPage totalPages={totalPages} pageNumber={pageNumber} />
+            {totalPages > 1 && (
+              <PaginationPage totalPages={totalPages} pageNumber={pageNumber} />
+            )}
           </div>
         </div>
       </div>

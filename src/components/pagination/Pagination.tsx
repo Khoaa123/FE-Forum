@@ -14,9 +14,11 @@ import {
 const PaginationPage = ({
   totalPages,
   pageNumber,
+  baseParams = "",
 }: {
   totalPages: number;
   pageNumber: number;
+  baseParams?: string;
 }) => {
   const getVisiblePages = () => {
     const delta = 2;
@@ -54,7 +56,7 @@ const PaginationPage = ({
         <PaginationItem>
           {pageNumber > 1 && (
             <PaginationPrevious
-              href={`?page=${pageNumber - 1}`}
+              href={`?${baseParams}&page=${pageNumber - 1}`}
               className="rounded-sm border border-gray-200 bg-white hover:bg-gray-100 dark:border-gray-800 dark:bg-[#1d1f20]"
             />
           )}
@@ -70,7 +72,7 @@ const PaginationPage = ({
               ) : (
                 <PaginationItem>
                   <PaginationLink
-                    href={`?page=${page}`}
+                    href={`?${baseParams}&page=${page}`}
                     isActive={page === pageNumber}
                     className={`rounded-none border border-gray-200 dark:border-gray-800 ${
                       page === pageNumber
@@ -89,7 +91,7 @@ const PaginationPage = ({
         <PaginationItem>
           {pageNumber < totalPages && (
             <PaginationNext
-              href={`?page=${pageNumber + 1}`}
+              href={`?${baseParams}&page=${pageNumber + 1}`}
               className="rounded-sm border border-gray-200 bg-white hover:bg-gray-100 dark:border-gray-800 dark:bg-[#1d1f20]"
             />
           )}

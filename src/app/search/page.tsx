@@ -2,19 +2,51 @@
 import BreadcrumbDetail from "@/components/breadcrumb/Breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { useQuery } from "@tanstack/react-query";
 import React, { useState } from "react";
 import { IoSearch } from "react-icons/io5";
+import { useRouter } from "next/navigation";
+
+type Thread = {
+  id: number;
+  title: string;
+  tag: string;
+  content: string;
+  userName: string;
+  forumName: string;
+};
+
+type SearchResponse = {
+  data: Thread[];
+  totalPages: number;
+  totalItems: number;
+};
 
 const Search = () => {
   const [isActive, setIsActive] = useState("All");
+  const [keyword, setKeyword] = useState("");
+  const [forum, setForum] = useState("");
+  const [tag, setTag] = useState("");
+  const router = useRouter();
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const params = new URLSearchParams();
+    if (keyword) params.append("keyword", keyword);
+    if (forum) params.append("forum", forum);
+    if (tag) params.append("tag", tag);
+
+    router.push(`/search/result?${params.toString()}`);
+  };
 
   return (
     <>
       <div className="container">
         <div className="my-3">
-          <BreadcrumbDetail />
+          {/* <BreadcrumbDetail /> */}
           <div className="my-3">
-            <p className="text-2xl text-zinc-100">Search</p>
+            <p className="text-2xl text-sky-600">Search</p>
           </div>
           <div>
             <Card className="my-3 overflow-hidden rounded-none border-none">
@@ -39,49 +71,57 @@ const Search = () => {
                 </button>
               </CardHeader>
               <CardContent className="p-0">
-                <div className="grid lg:grid-cols-3">
-                  <div className="col-span-1 border-r border-[#cbcdd0] bg-[#E2E3E5] px-3 py-7 text-right text-black">
-                    Từ khóa:
+                <form onSubmit={handleSearch}>
+                  <div className="grid lg:grid-cols-3">
+                    <div className="col-span-1 border-r border-[#cbcdd0] bg-[#E2E3E5] px-3 py-7 text-right text-black">
+                      Từ khóa:
+                    </div>
+                    <div className="col-span-2 bg-[#EBECED] px-3 py-5">
+                      <input
+                        type="text"
+                        value={keyword}
+                        onChange={(e) => setKeyword(e.target.value)}
+                        className="w-full rounded-md border border-solid border-[#b5b9bd] bg-[#e5eaf0] p-2 focus:border-sky-500 focus-visible:outline-none"
+                      />
+                    </div>
                   </div>
-                  <div className="col-span-2 bg-[#EBECED] px-3 py-5">
-                    <input
-                      type="text"
-                      className="w-full rounded-md border border-solid border-[#b5b9bd] bg-[#e5eaf0] p-2 focus:border-sky-500 focus-visible:outline-none"
-                    />
+                  <div className="grid lg:grid-cols-3">
+                    <div className="col-span-1 border-r border-[#cbcdd0] bg-[#E2E3E5] px-3 py-7 text-right text-black">
+                      Forum:
+                    </div>
+                    <div className="col-span-2 bg-[#EBECED] px-3 py-5">
+                      <input
+                        type="text"
+                        value={forum}
+                        onChange={(e) => setForum(e.target.value)}
+                        className="w-full rounded-md border border-solid border-[#b5b9bd] bg-[#e5eaf0] p-2 focus:border-sky-500 focus-visible:outline-none"
+                      />
+                    </div>
                   </div>
-                </div>
-                <div className="grid lg:grid-cols-3">
-                  <div className="col-span-1 border-r border-[#cbcdd0] bg-[#E2E3E5] px-3 py-7 text-right text-black">
-                    Forum:
-                  </div>
-                  <div className="col-span-2 bg-[#EBECED] px-3 py-5">
-                    <input
-                      type="text"
-                      className="w-full rounded-md border border-solid border-[#b5b9bd] bg-[#e5eaf0] p-2 focus:border-sky-500 focus-visible:outline-none"
-                    />
-                  </div>
-                </div>
 
-                <div className="grid lg:grid-cols-3">
-                  <div className="col-span-1 border-r border-[#cbcdd0] bg-[#E2E3E5] px-3 py-7 text-right text-black">
-                    Thread:
+                  <div className="grid lg:grid-cols-3">
+                    <div className="col-span-1 border-r border-[#cbcdd0] bg-[#E2E3E5] px-3 py-7 text-right text-black">
+                      Tag:
+                    </div>
+                    <div className="col-span-2 bg-[#EBECED] px-3 py-5">
+                      <input
+                        type="text"
+                        value={tag}
+                        onChange={(e) => setTag(e.target.value)}
+                        className="w-full rounded-md border border-solid border-[#b5b9bd] bg-[#e5eaf0] p-2 focus:border-sky-500 focus-visible:outline-none"
+                      />
+                    </div>
                   </div>
-                  <div className="col-span-2 bg-[#EBECED] px-3 py-5">
-                    <input
-                      type="text"
-                      className="w-full rounded-md border border-solid border-[#b5b9bd] bg-[#e5eaf0] p-2 focus:border-sky-500 focus-visible:outline-none"
-                    />
+                  <div className="grid lg:grid-cols-3">
+                    <div className="col-span-1 border-r border-[#cbcdd0] bg-[#E2E3E5] px-3 py-7 text-right text-black"></div>
+                    <div className="col-span-2 bg-[#EBECED] px-3 py-5">
+                      <Button className="gap-2 bg-[#5c7099] text-white hover:bg-[#4d5d80]">
+                        <IoSearch color="white" size={20} />
+                        Search
+                      </Button>
+                    </div>
                   </div>
-                </div>
-                <div className="grid lg:grid-cols-3">
-                  <div className="col-span-1 border-r border-[#cbcdd0] bg-[#E2E3E5] px-3 py-7 text-right text-black"></div>
-                  <div className="col-span-2 bg-[#EBECED] px-3 py-5">
-                    <Button className="gap-2 bg-[#5c7099] text-white hover:bg-[#4d5d80]">
-                      <IoSearch color="white" size={20} />
-                      Search
-                    </Button>
-                  </div>
-                </div>
+                </form>
               </CardContent>
             </Card>
           </div>

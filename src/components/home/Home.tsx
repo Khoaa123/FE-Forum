@@ -1,10 +1,11 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { FaRegComments } from "react-icons/fa6";
 import Image from "next/image";
 import avatar from "@images/avatar.png";
 import Link from "next/link";
 import Forum from "../forum/Forum";
+import { Thread } from "@/app/thread/[id]/page";
+import { formatDate, formatDateLastActivity } from "@/utils/FormatDate";
 
 type Category = {
   id: number;
@@ -19,6 +20,25 @@ const HomePage = async () => {
   const data = await res.json();
   const categories: Category[] = data.data;
 
+  const threadRes = await fetch(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/Thread/Latest`,
+    {
+      cache: "no-store",
+    }
+  );
+  const threadData = await threadRes.json();
+  const threads: Thread[] = threadData.data;
+
+  const trendingThreadRes = await fetch(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/Thread/Trending`,
+    {
+      cache: "no-store",
+    }
+  );
+  const trendingThreadData = await trendingThreadRes.json();
+  const trendingThreads: Thread[] = trendingThreadData.data;
+
+  console.log("trendingThreads", trendingThreads);
   return (
     <>
       <div className="container mt-2">
@@ -48,46 +68,27 @@ const HomePage = async () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
-                <div className="flex gap-2 px-4 py-1">
-                  <div className="flex-shrink-0">
-                    <Image
-                      src={avatar}
-                      alt="avatar"
-                      width={30}
-                      height={30}
-                      className="mt-1 rounded-full"
-                    />
+                {threads.map((thread) => (
+                  <div className="flex gap-2 px-4 py-1" key={thread.id}>
+                    <div className="flex-shrink-0">
+                      <Image
+                        src={avatar}
+                        alt="avatar"
+                        width={30}
+                        height={30}
+                        className="mt-1 rounded-full"
+                      />
+                    </div>
+                    <Link href={`/thread/${thread.id}`} className="text-sm">
+                      <p className="line-clamp-2 cursor-pointer text-blue-500 hover:text-amber-500 hover:underline">
+                        {thread.title}
+                      </p>
+                      <p className="text-gray-400">
+                        {formatDateLastActivity(thread.createdAt)}
+                      </p>
+                    </Link>
                   </div>
-                  <div className="">
-                    <p className="line-clamp-2 cursor-pointer text-sm text-blue-500 hover:text-amber-500 hover:underline">
-                      Top công ty công nghệ cho lâp trình viên ở Việt Nam
-                    </p>
-                    <p className="text-gray-400">
-                      Latest: kaya_toast 29 minutes ago
-                    </p>
-                    <p className="text-gray-400">Lập trình / CNTT</p>
-                  </div>
-                </div>
-                <div className="flex gap-2 px-4 py-1">
-                  <div className="flex-shrink-0">
-                    <Image
-                      src={avatar}
-                      alt="avatar"
-                      width={30}
-                      height={30}
-                      className="mt-1 rounded-full"
-                    />
-                  </div>
-                  <div className="text-sm">
-                    <p className="line-clamp-2">
-                      Top công ty công nghệ cho lâp trình viên ở Việt Nam
-                    </p>
-                    <p className="text-gray-400">
-                      Latest: kaya_toast 29 minutes ago
-                    </p>
-                    <p className="text-gray-400">Lập trình / CNTT</p>
-                  </div>
-                </div>
+                ))}
               </CardContent>
             </Card>
 
@@ -98,46 +99,34 @@ const HomePage = async () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
-                <div className="flex gap-2 px-4 py-1">
-                  <div className="flex-shrink-0">
-                    <Image
-                      src={avatar}
-                      alt="avatar"
-                      width={30}
-                      height={30}
-                      className="mt-1 rounded-full"
-                    />
+                {trendingThreads.map((thread) => (
+                  <div className="flex gap-2 px-4 py-1">
+                    <div className="flex-shrink-0">
+                      <Image
+                        src={avatar}
+                        alt="avatar"
+                        width={30}
+                        height={30}
+                        className="mt-1 rounded-full"
+                      />
+                    </div>
+                    <Link href={`/thread/${thread.id}`} className="text-sm">
+                      {" "}
+                      <p className="line-clamp-2 cursor-pointer text-blue-500 hover:text-amber-500 hover:underline">
+                        {thread.title}
+                      </p>
+                      <p className="text-gray-400">
+                        {formatDate(thread.createdAt)}
+                      </p>
+                      <p className="text-gray-400">
+                        Lượt xem:{" "}
+                        <span className="text-blue-500">
+                          {thread.viewCount}
+                        </span>
+                      </p>
+                    </Link>
                   </div>
-                  <div className="text-sm">
-                    <p className="line-clamp-2 cursor-pointer text-blue-500 hover:text-amber-500 hover:underline">
-                      Top công ty công nghệ cho lâp trình viên ở Việt Nam
-                    </p>
-                    <p className="text-gray-400">
-                      Latest: kaya_toast 29 minutes ago
-                    </p>
-                    <p className="text-gray-400">Lập trình / CNTT</p>
-                  </div>
-                </div>
-                <div className="flex gap-2 px-4 py-1">
-                  <div className="flex-shrink-0">
-                    <Image
-                      src={avatar}
-                      alt="avatar"
-                      width={30}
-                      height={30}
-                      className="mt-1 rounded-full"
-                    />
-                  </div>
-                  <div className="text-sm">
-                    <p className="line-clamp-2">
-                      Top công ty công nghệ cho lâp trình viên ở Việt Nam
-                    </p>
-                    <p className="text-gray-400">
-                      Latest: kaya_toast 29 minutes ago
-                    </p>
-                    <p className="text-gray-400">Lập trình / CNTT</p>
-                  </div>
-                </div>
+                ))}
               </CardContent>
             </Card>
           </div>
