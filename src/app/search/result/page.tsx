@@ -19,7 +19,7 @@ const SearchResult = () => {
   const forum = searchParams.get("forum") || "";
   const tag = searchParams.get("tag") || "";
   const pageNumber = Number(searchParams.get("page")) || 1;
-  const pageSize = 2;
+  const pageSize = 8;
   const fetchSearchResults = async (): Promise<any> => {
     const queryParams = new URLSearchParams({
       pageNumber: pageNumber.toString(),

@@ -244,7 +244,9 @@ const ForumDetail = ({ params }: { params: { id: number } }) => {
               </CardContent>
             </Card>
           </div>
-          <PaginationPage totalPages={totalPages} pageNumber={pageNumber} />
+          {totalPages > 1 && (
+            <PaginationPage totalPages={totalPages} pageNumber={pageNumber} />
+          )}
         </div>
       </div>
     </>

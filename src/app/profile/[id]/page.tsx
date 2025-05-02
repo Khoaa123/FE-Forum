@@ -26,6 +26,7 @@ import { jwtDecode } from "jwt-decode";
 import { DecodeToken } from "@/utils/UserType";
 import { getUserIdFromToken } from "@/utils/Helpers";
 import useFetchUser from "@/hooks/useFetchUser";
+import { useParams } from "next/navigation";
 
 type UserInfo = {
   userName: string;
@@ -46,12 +47,15 @@ type ViewedThread = {
 };
 
 const Profile = () => {
+  const params = useParams();
   const [isActive, setIsActive] = useState("All");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [viewedThread, setViewedThread] = useState<ViewedThread[]>([]);
   const [threads, setThreads] = useState<Thread[]>([]);
 
-  const userId = getUserIdFromToken();
+  const userIdFromUrl = params.id as string;
+  const userIdFromToken = getUserIdFromToken();
+  const userId = userIdFromUrl || userIdFromToken;
 
   const handleAvatarClick = () => {
     if (fileInputRef.current) {
@@ -97,22 +101,6 @@ const Profile = () => {
   const delay = (ms: number) =>
     new Promise((resolve) => setTimeout(resolve, ms));
 
-  // const fetchUser = async () => {
-  //   const res = await fetch(
-  //     `${process.env.NEXT_PUBLIC_API_BASE_URL}/Account/GetUser?userId=${userId}`
-  //   );
-  //   const data = await res.json();
-  //   return data.data;
-  // };
-
-  // const {
-  //   data: userInfo,
-  //   isLoading,
-  //   isError,
-  // } = useQuery({
-  //   queryKey: ["userInfo"],
-  //   queryFn: fetchUser,
-  // });
   const { data: userInfo, isLoading, isError } = useFetchUser(userId || "");
 
   const fetchViewedThread = async () => {
@@ -224,17 +212,19 @@ const Profile = () => {
                       </p>
                     </div>
                   </div>
-                  <div className="m-auto flex-1 text-end md:m-0">
-                    <Button
-                      className="rounded-none bg-[#ebeced] hover:bg-transparent md:mr-5"
-                      onClick={handleAvatarClick}
-                    >
-                      Đổi Avatar
-                    </Button>
-                    <Button className="rounded-none bg-[#ebeced] hover:bg-transparent md:mr-5">
-                      Report
-                    </Button>
-                  </div>
+                  {userIdFromUrl === userIdFromToken && (
+                    <div className="m-auto flex-1 text-end md:m-0">
+                      <Button
+                        className="rounded-none bg-[#ebeced] hover:bg-transparent md:mr-5"
+                        onClick={handleAvatarClick}
+                      >
+                        Đổi Avatar
+                      </Button>
+                      <Button className="rounded-none bg-[#ebeced] hover:bg-transparent md:mr-5">
+                        Report
+                      </Button>
+                    </div>
+                  )}
                 </div>
                 <div className="bg-[#EBECED] py-2 dark:border-t dark:border-gray-700 dark:bg-[#1d1f20]">
                   <div className="py-2 md:ml-48">
