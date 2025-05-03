@@ -61,26 +61,32 @@ const Forum = async ({ categoryId }: { categoryId: number }) => {
               </div>
             </div>
             <div className="col-span-2 flex gap-3">
-              <div className="flex items-center">
-                <Image
-                  src={forum.latestThread?.avatarUrl || avatar}
-                  alt="avatar"
-                  width={40}
-                  height={40}
-                  className="rounded-full"
-                />
-              </div>
-              <div>
-                <div className="line-clamp-1 py-[2px] text-sm">
-                  <span className="mr-1 rounded-sm border border-solid border-sky-500 bg-[#dce7f5] p-[3px] text-xs font-medium dark:bg-transparent">
-                    Thảo luận
-                  </span>
-                  {forum.latestThread?.title}
-                </div>
-                <p className="text-sm text-gray-400">
-                  {formatDate(forum.latestThread?.createdAt)}
-                </p>
-              </div>
+              {forum.latestThread ? (
+                <>
+                  <div className="flex items-center">
+                    <Image
+                      src={forum.latestThread.avatarUrl || avatar}
+                      alt="avatar"
+                      width={40}
+                      height={40}
+                      className="rounded-full"
+                    />
+                  </div>
+                  <div>
+                    <div className="line-clamp-1 py-[2px] text-sm">
+                      <span className="mr-1 rounded-sm border border-solid border-sky-500 bg-[#dce7f5] p-[3px] text-xs font-medium dark:bg-transparent">
+                        Thảo luận
+                      </span>
+                      {forum.latestThread.title}
+                    </div>
+                    <p className="text-sm text-gray-400">
+                      {formatDate(forum.latestThread.createdAt)}
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <p></p>
+              )}
             </div>
           </Link>
         </div>

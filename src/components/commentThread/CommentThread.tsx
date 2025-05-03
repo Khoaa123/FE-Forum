@@ -69,7 +69,6 @@ const CommentThread = ({ thread }: ThreadProp) => {
 
   const { data: userInfo, isLoading, isError } = useFetchUser(userId || "");
 
-  // Hàm fetch thông tin comment cha từ API
   const fetchParentComment = useCallback(
     async (parentId: number) => {
       if (parentCommentsCache[parentId]) {
@@ -82,7 +81,7 @@ const CommentThread = ({ thread }: ThreadProp) => {
         );
         if (!res.ok) throw new Error("Failed to fetch parent comment");
         const data = await res.json();
-        const parentComment: Comment = data.data; // Đảm bảo khớp với type Comment
+        const parentComment: Comment = data.data;
         setParentCommentsCache((prev) => ({
           ...prev,
           [parentId]: parentComment,
@@ -96,7 +95,6 @@ const CommentThread = ({ thread }: ThreadProp) => {
     [parentCommentsCache]
   );
 
-  // Fetch tất cả các comment cha khi danh sách comments thay đổi
   useEffect(() => {
     const fetchAllParentComments = async () => {
       setLoadingParents(true);

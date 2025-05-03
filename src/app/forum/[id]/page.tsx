@@ -14,6 +14,7 @@ import { FaRegEdit } from "react-icons/fa";
 import { formatDate } from "@/utils/FormatDate";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
+import { getUserIdFromToken } from "@/utils/Helpers";
 
 type Thread = {
   id: number;
@@ -78,6 +79,34 @@ const SkeletonLoader = () => {
 };
 
 const ForumDetail = ({ params }: { params: { id: number } }) => {
+  const userId = getUserIdFromToken();
+
+  console.log("userId", userId);
+
+  const recordThreadView = async (threadId: number) => {
+    if (!userId) {
+      console.error("User is not logged in. Cannot record thread view.");
+      return;
+    }
+
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/Thread/RecordViewedThread?userId=${userId}&threadId=${threadId}`,
+        {
+          method: "POST", // Phương thức POST vẫn được giữ nguyên
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error("Failed to record thread view");
+      }
+
+      console.log("Thread view recorded successfully");
+    } catch (error) {
+      console.error("Error recording thread view:", error);
+    }
+  };
+
   const searchParams = useSearchParams();
   const pageNumber = searchParams.get("page")
     ? Number(searchParams.get("page"))
@@ -149,6 +178,7 @@ const ForumDetail = ({ params }: { params: { id: number } }) => {
                     href={`/thread/${thread.id}`}
                     key={thread.id}
                     className="grid cursor-pointer grid-cols-6 gap-2 border-b border-[#d3d5d7] px-4 py-2 dark:border-[#3e4346]"
+                    onClick={() => recordThreadView(thread.id)}
                   >
                     <div className="col-span-4 flex gap-3">
                       <div className="flex items-center">

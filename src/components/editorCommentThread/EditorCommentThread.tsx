@@ -9,7 +9,7 @@ import { toast } from "react-toastify";
 type EditorCommentThreadProps = {
   threadId: number;
   onCommentAdded: (newComment: any) => void;
-  parentCommentId?: number | null; // Thêm prop này để xử lý reply
+  parentCommentId?: number | null;
 };
 
 const EditorCommentThread = ({

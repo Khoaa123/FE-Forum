@@ -46,7 +46,7 @@ const Search = () => {
         <div className="my-3">
           {/* <BreadcrumbDetail /> */}
           <div className="my-3">
-            <p className="text-2xl text-sky-600">Search</p>
+            <p className="text-2xl text-sky-600">Tìm kiếm</p>
           </div>
           <div>
             <Card className="my-3 overflow-hidden rounded-none border-none">
