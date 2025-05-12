@@ -279,7 +279,6 @@ const UsersPage = () => {
           </TableBody>
         </Table>
       </div>
-
       <PaginationPage totalPages={totalPages} pageNumber={currentPage} />
     </div>
   );

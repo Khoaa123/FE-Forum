@@ -1,3 +1,4 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -45,66 +46,42 @@ import {
   Search,
   Trash2,
 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import PaginationPage from "@/components/pagination/Pagination";
 
-const categories = [
-  {
-    id: 1,
-    name: "Đại sảnh",
-    slug: "dai-sanh",
-    description: "Thông báo, góp ý và tin tức chung",
-    threads: 245,
-    posts: 1245,
-    subcategories: [
-      { id: 101, name: "Thông báo", threads: 45, posts: 120 },
-      { id: 102, name: "Góp ý", threads: 78, posts: 325 },
-      { id: 103, name: "Tin tức iNet", threads: 122, posts: 800 },
-    ],
-  },
-  {
-    id: 2,
-    name: "Máy tính",
-    slug: "may-tinh",
-    description: "Thảo luận về máy tính, phần cứng, phần mềm",
-    threads: 532,
-    posts: 3245,
-    subcategories: [
-      { id: 201, name: "Tư vấn cấu hình", threads: 145, posts: 920 },
-      { id: 202, name: "Overclocking & Cooling", threads: 87, posts: 425 },
-      { id: 203, name: "AMD", threads: 102, posts: 600 },
-      { id: 204, name: "Intel", threads: 98, posts: 580 },
-      { id: 205, name: "GPU & Màn hình", threads: 100, posts: 720 },
-    ],
-  },
-  {
-    id: 3,
-    name: "Điện thoại",
-    slug: "dien-thoai",
-    description: "Thảo luận về điện thoại di động, tablet",
-    threads: 432,
-    posts: 2145,
-    subcategories: [
-      { id: 301, name: "Android", threads: 145, posts: 920 },
-      { id: 302, name: "iOS", threads: 87, posts: 425 },
-      { id: 303, name: "Windows Phone", threads: 22, posts: 100 },
-      { id: 304, name: "Phụ kiện", threads: 78, posts: 700 },
-    ],
-  },
-  {
-    id: 4,
-    name: "Đời sống",
-    slug: "doi-song",
-    description: "Thảo luận về đời sống, xã hội",
-    threads: 332,
-    posts: 1845,
-    subcategories: [
-      { id: 401, name: "Chuyện trò linh tinh", threads: 145, posts: 920 },
-      { id: 402, name: "Ẩm thực", threads: 87, posts: 425 },
-      { id: 403, name: "Du lịch", threads: 100, posts: 500 },
-    ],
-  },
-];
+type Category = {
+  id: number;
+  name: string;
+  forumCount: number;
+  forums: string[];
+};
 
 const CategoriesPage = () => {
+  const searchParams = useSearchParams();
+  const currentPage = parseInt(searchParams.get("page") || "1");
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/Category?page=${currentPage}&pageSize=10`
+        );
+        const data = await res.json();
+        setCategories(data.data);
+        setTotalPages(data.totalPages);
+      } catch (error) {
+        console.error("Không thể lấy danh sách người dùng", error);
+      }
+    };
+
+    fetchCategories();
+  }, [currentPage]);
+
+  console.log("categories", categories);
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
@@ -193,22 +170,14 @@ const CategoriesPage = () => {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
-                  <CardDescription>{category.description}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
-                    <div className="text-sm font-medium">Subcategories:</div>
+                    <div className="text-sm font-medium">Các chủ đề:</div>
                     <ul className="space-y-1 text-sm">
-                      {category.subcategories.map((subcategory) => (
-                        <li
-                          key={subcategory.id}
-                          className="flex items-center justify-between"
-                        >
-                          <span>{subcategory.name}</span>
-                          <span className="text-xs text-muted-foreground">
-                            {subcategory.threads} threads, {subcategory.posts}{" "}
-                            posts
-                          </span>
+                      {category.forums.map((subcategory) => (
+                        <li className="flex items-center justify-between">
+                          <span>{subcategory}</span>
                         </li>
                       ))}
                     </ul>
@@ -216,8 +185,7 @@ const CategoriesPage = () => {
                 </CardContent>
                 <CardFooter className="border-t pt-4">
                   <div className="flex w-full items-center justify-between text-sm text-muted-foreground">
-                    <span>Total: {category.threads} threads</span>
-                    <span>{category.posts} posts</span>
+                    <span>Tổng: {category.forumCount} chủ đề</span>
                   </div>
                 </CardFooter>
               </Card>
@@ -236,10 +204,8 @@ const CategoriesPage = () => {
                       <ArrowUpDown className="h-3 w-3" />
                     </div>
                   </TableHead>
-                  <TableHead>Mô tả</TableHead>
                   <TableHead>Danh mục con</TableHead>
-                  <TableHead>Chủ đề</TableHead>
-                  <TableHead>Bài viết</TableHead>
+
                   <TableHead className="w-[50px]"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -249,10 +215,8 @@ const CategoriesPage = () => {
                     <TableCell className="font-medium">
                       {category.name}
                     </TableCell>
-                    <TableCell>{category.description}</TableCell>
-                    <TableCell>{category.subcategories.length}</TableCell>
-                    <TableCell>{category.threads}</TableCell>
-                    <TableCell>{category.posts}</TableCell>
+                    <TableCell>{category.forumCount}</TableCell>
+
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -283,6 +247,7 @@ const CategoriesPage = () => {
           </div>
         </TabsContent>
       </Tabs>
+      <PaginationPage totalPages={totalPages} pageNumber={currentPage} />
     </div>
   );
 };

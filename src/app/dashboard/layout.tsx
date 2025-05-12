@@ -136,11 +136,11 @@ export default function DashboardLayout({
             </SidebarMenu>
           </SidebarFooter>
         </Sidebar>
-        <div className="flex flex-1 flex-col overflow-hidden">
+        <div className="flex flex-1 flex-col">
           <header className="flex h-14 items-center gap-4 border-b bg-white px-4 lg:h-[60px] lg:px-6">
             <SidebarTrigger />
           </header>
-          <main className="h-svh bg-white p-4 lg:p-6">{children}</main>
+          <main className="h-full bg-white p-4 lg:p-6">{children}</main>
         </div>
       </div>
     </SidebarProvider>
