@@ -50,6 +50,7 @@ type User = {
   joinedDate: string;
   role: string;
   status: string;
+  isBanned: boolean;
 };
 
 const UsersPage = () => {
@@ -64,23 +65,24 @@ const UsersPage = () => {
 
   const selectedUser = users.find((u) => u.id === selectedUserId);
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/Admin/GetAllUsers?page=${currentPage}&pageSize=10`
-        );
-        const data = await res.json();
-        setUsers(data.data);
-        setTotalPages(data.totalPages);
-      } catch (error) {
-        console.error("Không thể lấy danh sách người dùng", error);
-      }
-    };
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/Admin/GetAllUsers?page=${currentPage}&pageSize=10`
+      );
+      const data = await res.json();
+      setUsers(data.data);
+      setTotalPages(data.totalPages);
+    } catch (error) {
+      console.error("Không thể lấy danh sách người dùng", error);
+    }
+  };
 
+  useEffect(() => {
     fetchUsers();
   }, [currentPage]);
 
+  // Change role handler
   const handleChangeRole = async () => {
     if (!selectedUserId || !newRole) return;
 
@@ -98,15 +100,38 @@ const UsersPage = () => {
 
       toast.success("Cập nhật quyền thành công");
       setOpenDialog(false);
-
-      const resUsers = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/Admin/GetAllUsers?page=${currentPage}&pageSize=10`
-      );
-      const data = await resUsers.json();
-      setUsers(data.data);
-      toast.success("Cập nhật quyền thành công");
+      await fetchUsers();
     } catch (error) {
       console.error(error);
+      toast.error("Cập nhật quyền thất bại");
+    }
+  };
+
+  const handleBanToggle = async (user: User) => {
+    try {
+      const endpoint = user.isBanned
+        ? `/Admin/UnbanUser/${user.id}`
+        : `/Admin/BanUser/${user.id}`;
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}${endpoint}`,
+        {
+          method: "POST",
+        }
+      );
+
+      if (!res.ok) throw new Error("Thao tác thất bại");
+
+      toast.success(
+        user.isBanned
+          ? "Khôi phục tài khoản thành công"
+          : "Khóa tài khoản thành công"
+      );
+
+      await fetchUsers();
+    } catch (error) {
+      console.error(error);
+      toast.error("Thao tác thất bại");
     }
   };
 
@@ -181,19 +206,9 @@ const UsersPage = () => {
                 </TableCell>
                 <TableCell>
                   <Badge
-                    variant={
-                      user.status === "active"
-                        ? "default"
-                        : user.status === "suspended"
-                        ? "warning"
-                        : "destructive"
-                    }
+                    variant={user.isBanned === true ? "destructive" : "outline"}
                   >
-                    {user.status === "active"
-                      ? "Hoạt động"
-                      : user.status === "suspended"
-                      ? "Đã đình chỉ"
-                      : "Không xác định"}
+                    {user.isBanned === true ? "Ban" : "Hoạt động"}
                   </Badge>
                 </TableCell>
                 <TableCell>{formatDate(user.joinedDate)}</TableCell>
@@ -219,8 +234,23 @@ const UsersPage = () => {
                         Đổi quyền
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-destructive">
-                        Đình chỉ người dùng
+                      <DropdownMenuItem
+                        className="text-destructive"
+                        onClick={() => handleBanToggle(user)}
+                      >
+                        {user.isBanned ? (
+                          <div className="flex items-center gap-2">
+                            <span className="text-destructive">
+                              Khôi phục tài khoản
+                            </span>
+                            <Badge variant="default">UnBan</Badge>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <span>Khóa tài khoản</span>
+                            <Badge variant="destructive">Ban</Badge>
+                          </div>
+                        )}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
