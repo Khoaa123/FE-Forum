@@ -5,6 +5,7 @@ import Header from "@/components/header/Header";
 import ProgressBarProvider from "@/components/progressBarProvider/ProgressBarProvider";
 import { ToastContainer } from "react-toastify";
 import { ThemeProvider } from "@/components/theme-provider";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function LayoutWrapper({
   children,
