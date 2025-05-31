@@ -31,6 +31,7 @@ export type Thread = {
   comments: Comment[];
   lastCommentAt: string;
   lastCommentBy: string;
+  isHidden: boolean;
 };
 
 export type Comment = {

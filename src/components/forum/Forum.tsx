@@ -69,7 +69,7 @@ const Forum = async ({ categoryId }: { categoryId: number }) => {
                       alt="avatar"
                       width={40}
                       height={40}
-                      className="rounded-full"
+                      className="h-10 w-10 rounded-full"
                     />
                   </div>
                   <div>

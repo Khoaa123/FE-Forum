@@ -1,3 +1,4 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -19,102 +20,80 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Eye, MoreHorizontal, Search } from "lucide-react";
-
-const posts = [
-  {
-    id: 1,
-    title: "Thảo luận về công nghệ mới",
-    author: {
-      name: "Nguyễn Văn A",
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-    category: "Công nghệ",
-    status: "published",
-    views: 1245,
-    replies: 32,
-    createdAt: "2 giờ trước",
-  },
-  {
-    id: 2,
-    title: "Chia sẻ kinh nghiệm du lịch Đà Nẵng",
-    author: {
-      name: "Trần Thị B",
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-    category: "Du lịch",
-    status: "published",
-    views: 876,
-    replies: 18,
-    createdAt: "5 giờ trước",
-  },
-  {
-    id: 3,
-    title: "Review laptop gaming mới nhất 2024",
-    author: {
-      name: "Lê Văn C",
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-    category: "Máy tính",
-    status: "published",
-    views: 2345,
-    replies: 45,
-    createdAt: "1 ngày trước",
-  },
-  {
-    id: 4,
-    title: "Thảo luận về thị trường chứng khoán",
-    author: {
-      name: "Phạm Thị D",
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-    category: "Tài chính",
-    status: "published",
-    views: 1567,
-    replies: 28,
-    createdAt: "2 ngày trước",
-  },
-  {
-    id: 5,
-    title: "Góp ý về tính năng mới của diễn đàn",
-    author: {
-      name: "Hoàng Văn E",
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-    category: "Góp ý",
-    status: "flagged",
-    views: 432,
-    replies: 15,
-    createdAt: "3 ngày trước",
-  },
-  {
-    id: 6,
-    title: "Hướng dẫn cài đặt Windows 11",
-    author: {
-      name: "Vũ Thị F",
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-    category: "Máy tính",
-    status: "published",
-    views: 3210,
-    replies: 52,
-    createdAt: "4 ngày trước",
-  },
-  {
-    id: 7,
-    title: "Đánh giá điện thoại Samsung mới",
-    author: {
-      name: "Đào Văn G",
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-    category: "Công nghệ",
-    status: "hidden",
-    views: 876,
-    replies: 23,
-    createdAt: "5 ngày trước",
-  },
-];
+import { useEffect, useState } from "react";
+import type { Thread } from "@/app/thread/[id]/page";
+import { useRouter, useSearchParams } from "next/navigation";
+import { formatDateLastActivity } from "@/utils/FormatDate";
+import PaginationPage from "@/components/pagination/Pagination";
+import { toast } from "react-toastify";
 
 const PostsPage = () => {
+  const searchParams = useSearchParams();
+  const currentPage = Number.parseInt(searchParams.get("page") || "1");
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [threads, setThreads] = useState<Thread[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "visible" | "hidden"
+  >("all");
+  const router = useRouter();
+
+  const fetchPosts = async () => {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/Thread/All?page=${currentPage}&pageSize=10`
+      );
+      const data = await res.json();
+
+      let filteredThreads = data.data;
+      if (statusFilter === "visible") {
+        filteredThreads = data.data.filter(
+          (thread: Thread) => !thread.isHidden
+        );
+      } else if (statusFilter === "hidden") {
+        filteredThreads = data.data.filter((thread: Thread) => thread.isHidden);
+      }
+
+      setThreads(filteredThreads);
+      setTotalPages(data.totalPages);
+    } catch (error) {
+      console.error("Lỗi khi tải bài viết:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPosts();
+  }, [currentPage, statusFilter]);
+
+  const toggleHideThread = async (threadId: number) => {
+    try {
+      setLoading(true);
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/Thread/Hide?id=${threadId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (!res.ok) {
+        throw new Error("Lỗi khi ẩn/hiện bài viết");
+      }
+      toast.success("Cập nhật trạng thái bài viết thành công");
+
+      // Refresh data with current filter
+      fetchPosts();
+    } catch (error) {
+      console.error(error);
+      toast.error("Có lỗi xảy ra khi cập nhật trạng thái bài viết");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
@@ -135,7 +114,29 @@ const PostsPage = () => {
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input placeholder="Tìm kiếm bài viết..." className="pl-8" />
         </div>
-        <Button variant="outline">Lọc</Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline">
+              Lọc{" "}
+              {statusFilter === "visible"
+                ? "(Hiển thị)"
+                : statusFilter === "hidden"
+                ? "(Đã ẩn)"
+                : ""}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem onClick={() => setStatusFilter("all")}>
+              Tất cả bài viết
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setStatusFilter("visible")}>
+              Chỉ bài viết hiển thị
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setStatusFilter("hidden")}>
+              Chỉ bài viết đã ẩn
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <div className="rounded-md border">
@@ -151,79 +152,101 @@ const PostsPage = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {posts.map((post) => (
-              <TableRow key={post.id}>
-                <TableCell>
-                  <div className="flex flex-col">
-                    <div className="font-medium">{post.title}</div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Avatar className="h-5 w-5">
-                        <AvatarImage
-                          src={post.author.avatar || "/placeholder.svg"}
-                          alt={post.author.name}
-                        />
-                        <AvatarFallback>
-                          {post.author.name.substring(0, 2)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span>{post.author.name}</span>
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge variant="outline">{post.category}</Badge>
-                </TableCell>
-                <TableCell>
-                  <Badge
-                    variant={
-                      post.status === "published"
-                        ? "default"
-                        : post.status === "flagged"
-                        ? "warning"
-                        : "destructive"
-                    }
-                  >
-                    {post.status === "published"
-                      ? "Đã đăng"
-                      : post.status === "flagged"
-                      ? "Cần xem xét"
-                      : "Đã ẩn"}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <div className="flex flex-col text-sm">
-                    <div>{post.views} lượt xem</div>
-                    <div>{post.replies} phản hồi</div>
-                  </div>
-                </TableCell>
-                <TableCell>{post.createdAt}</TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <MoreHorizontal className="h-4 w-4" />
-                        <span className="sr-only">Mở menu</span>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Hành động</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem>Xem bài viết</DropdownMenuItem>
-                      <DropdownMenuItem>Chỉnh sửa</DropdownMenuItem>
-                      <DropdownMenuItem>Ghim bài viết</DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem>Ẩn bài viết</DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive">
-                        Xoá bài viết
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={6}>Đang tải...</TableCell>
               </TableRow>
-            ))}
+            ) : threads.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6}>Không có bài viết nào.</TableCell>
+              </TableRow>
+            ) : (
+              threads.map((thread) => (
+                <TableRow
+                  key={thread.id}
+                  className={thread.isHidden ? "opacity-60" : ""}
+                >
+                  <TableCell>
+                    <div className="flex flex-col">
+                      <div className="font-medium">
+                        {thread.title}
+                        {thread.isHidden && (
+                          <Badge variant="outline" className="ml-2 bg-red-100">
+                            Đã ẩn
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Avatar className="h-5 w-5">
+                          <AvatarImage
+                            src={thread.avatarUrl || "/placeholder.svg"}
+                            alt={thread.displayName}
+                          />
+                          <AvatarFallback>
+                            {thread.displayName?.substring(0, 2)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span>{thread.displayName}</span>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline">{thread.forumName}</Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={thread.isSticky ? "default" : "outline"}>
+                      {thread.isSticky ? "Ghim" : "Bình thường"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-col text-sm">
+                      <div>{thread.viewCount} lượt xem</div>
+                      <div>{thread.totalComments ?? 0} phản hồi</div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {formatDateLastActivity(thread.createdAt)}
+                  </TableCell>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreHorizontal className="h-4 w-4" />
+                          <span className="sr-only">Mở menu</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Hành động</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => router.push(`/thread/${thread.id}`)}
+                        >
+                          Xem bài viết
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>Chỉnh sửa</DropdownMenuItem>
+                        <DropdownMenuItem>
+                          {thread.isSticky ? "Bỏ ghim" : "Ghim bài viết"}
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => toggleHideThread(thread.id)}
+                        >
+                          {thread.isHidden ? "Hiện bài viết" : "Ẩn bài viết"}
+                        </DropdownMenuItem>
+
+                        <DropdownMenuItem className="text-destructive">
+                          Xoá bài viết
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>
+      <PaginationPage totalPages={totalPages} pageNumber={currentPage} />
     </div>
   );
 };

@@ -83,6 +83,7 @@ const HomePage = async () => {
                       <p className="line-clamp-2 cursor-pointer text-blue-500 hover:text-amber-500 hover:underline">
                         {thread.title}
                       </p>
+
                       <p className="text-gray-400">
                         {formatDateLastActivity(thread.createdAt)}
                       </p>
