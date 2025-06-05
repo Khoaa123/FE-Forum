@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send, Search } from "lucide-react";
 import { useUserStore } from "@/store/User";
+import { useConversationStore, Conversation } from "@/store/Conversations";
 
 type Message = {
   content: string;
@@ -19,26 +20,22 @@ type Message = {
   receiverDisplayName: string;
 };
 
-type Conversation = {
-  id: string;
-  name: string;
-  avatar: string;
-  lastMessage: string;
-  unread: number;
-  online: boolean;
-};
-
 const SIGNALR_HUB_URL = "https://localhost:7094/chatHub";
 
 const ForumChat = () => {
   const { userId } = useUserStore((state) => ({
     userId: state.userId,
   }));
-  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const { conversations, setConversations, updateConversation } =
+    useConversationStore();
+  const [filteredConversations, setFilteredConversations] = useState<
+    Conversation[]
+  >([]);
   const [selectedConversation, setSelectedConversation] =
     useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [connection, setConnection] = useState<HubConnection | null>(null);
   const [status, setStatus] = useState<
     "Connected" | "Disconnected" | "Connecting"
@@ -48,6 +45,7 @@ const ForumChat = () => {
 
   useEffect(() => {
     if (!userId) return;
+
     const fetchConversations = async () => {
       try {
         setIsLoading(true);
@@ -65,12 +63,13 @@ const ForumChat = () => {
             name: conv.otherUserDisplayName,
             avatar:
               conv.otherUserAvatarUrl || "/placeholder.svg?height=40&width=40",
-            lastMessage: conv.lastMessageContent,
-            unread: 0,
+            lastMessage: conv.lastMessageContent || "",
+            unread: conv.unreadCount || 0,
             online: false,
           })
         );
         setConversations(fetchedConversations);
+        setFilteredConversations(fetchedConversations);
         if (fetchedConversations.length > 0) {
           setSelectedConversation(fetchedConversations[0]);
         }
@@ -79,20 +78,38 @@ const ForumChat = () => {
       }
     };
     fetchConversations();
-  }, [userId]);
+  }, [userId, setConversations]);
+
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredConversations(conversations);
+    } else {
+      const filtered = conversations.filter((conv) =>
+        conv.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredConversations(filtered);
+    }
+  }, [searchQuery, conversations]);
 
   useEffect(() => {
     if (!userId) return;
+
     const conn = new HubConnectionBuilder()
-      .withUrl(SIGNALR_HUB_URL)
+      .withUrl(`${SIGNALR_HUB_URL}?userId=${userId}`)
       .withAutomaticReconnect()
       .build();
 
     setStatus("Connecting");
     conn
       .start()
-      .then(() => setStatus("Connected"))
-      .catch(() => setStatus("Disconnected"));
+      .then(() => {
+        setStatus("Connected");
+        return conn.invoke("RegisterConnection", userId);
+      })
+      .catch((err) => {
+        console.error("SignalR Connection Error:", err);
+        setStatus("Disconnected");
+      });
 
     conn.on(
       "ReceiveMessage",
@@ -102,6 +119,21 @@ const ForumChat = () => {
         content: string,
         sentAt: string
       ) => {
+        console.log(
+          `Received message: ${content} from ${senderId} to ${receiverId}`
+        );
+
+        const conversationId = senderId === userId ? receiverId : senderId;
+
+        updateConversation(conversationId, {
+          lastMessage: content,
+          unread:
+            selectedConversation?.id === conversationId
+              ? 0
+              : (conversations.find((conv) => conv.id === conversationId)
+                  ?.unread || 0) + 1,
+        });
+
         if (
           selectedConversation &&
           ((senderId === userId && receiverId === selectedConversation.id) ||
@@ -131,13 +163,6 @@ const ForumChat = () => {
               },
             ];
           });
-          setConversations((prev) =>
-            prev.map((conv) =>
-              conv.id === (senderId === userId ? receiverId : senderId)
-                ? { ...conv, lastMessage: content }
-                : conv
-            )
-          );
         }
       }
     );
@@ -147,10 +172,11 @@ const ForumChat = () => {
     return () => {
       conn.stop();
     };
-  }, [selectedConversation?.id, userId]);
+  }, [selectedConversation?.id, userId, updateConversation]);
 
   useEffect(() => {
     if (!userId || !selectedConversation) return;
+
     const fetchMessages = async () => {
       try {
         const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/Chat/messages/${userId}/${selectedConversation.id}`;
@@ -166,17 +192,25 @@ const ForumChat = () => {
             sentAt: msg.sentAt,
             senderId: msg.senderId,
             senderDisplayName: msg.senderDisplayName,
-            senderAvatarUrl: msg.senderAvatarUrl,
+            senderAvatarUrl: msg.senderAvatarUrl || "",
             receiverId: msg.receiverId,
             receiverDisplayName: msg.receiverDisplayName,
           }))
+        );
+        updateConversation(selectedConversation.id, { unread: 0 });
+        await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/Chat/mark-read/${userId}/${selectedConversation.id}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+          }
         );
       } catch {
         setMessages([]);
       }
     };
     fetchMessages();
-  }, [selectedConversation?.id, userId]);
+  }, [selectedConversation?.id, userId, updateConversation]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -211,7 +245,10 @@ const ForumChat = () => {
           body: JSON.stringify(messageRequest),
         }
       );
-      if (!res.ok) return;
+      if (!res.ok) {
+        console.error("Failed to send message via API");
+        return;
+      }
 
       setMessages((prev) => [
         ...prev,
@@ -226,13 +263,10 @@ const ForumChat = () => {
         },
       ]);
 
-      setConversations((prev) =>
-        prev.map((conv) =>
-          conv.id === selectedConversation.id
-            ? { ...conv, lastMessage: newMessage }
-            : conv
-        )
-      );
+      updateConversation(selectedConversation.id, {
+        lastMessage: newMessage,
+        unread: 0,
+      });
 
       await connection.invoke(
         "SendMessage",
@@ -241,9 +275,10 @@ const ForumChat = () => {
         newMessage,
         sentAt
       );
-
       setNewMessage("");
-    } catch {}
+    } catch (err) {
+      console.error("Error sending message:", err);
+    }
   };
 
   return (
@@ -253,7 +288,12 @@ const ForumChat = () => {
           <h2 className="mb-2 text-xl font-semibold">Tin nhắn</h2>
           <div className="relative mb-2">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            <Input placeholder="Tìm kiếm..." className="pl-10" />
+            <Input
+              placeholder="Tìm kiếm..."
+              className="pl-10"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
         </div>
         <ScrollArea className="flex-1">
@@ -261,10 +301,10 @@ const ForumChat = () => {
             {userId ? (
               isLoading ? (
                 <p>Đang tải...</p>
-              ) : conversations.length === 0 ? (
-                <p>Không có cuộc trò chuyện nào</p>
+              ) : filteredConversations.length === 0 ? (
+                <p>Không tìm thấy cuộc trò chuyện nào</p>
               ) : (
-                conversations
+                filteredConversations
                   .filter((conv) => conv.id !== userId)
                   .map((conv) => (
                     <div
@@ -282,7 +322,7 @@ const ForumChat = () => {
                       </Avatar>
                       <div className="ml-3 flex-1">
                         <div className="font-medium">{conv.name}</div>
-                        <div className="text-xs text-gray-500">
+                        <div className="truncate text-xs text-gray-500">
                           {conv.lastMessage}
                         </div>
                       </div>
@@ -359,7 +399,7 @@ const ForumChat = () => {
                           </div>
                         )}
                         <div
-                          className={`px-4 py-2 rounded-lg ${
+                          className={`px-4 py-2 rounded-lg break-words ${
                             isOwn
                               ? "bg-blue-500 text-white"
                               : "bg-gray-200 text-gray-900"

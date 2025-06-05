@@ -4,6 +4,7 @@ import React from "react";
 import { FaRegComments } from "react-icons/fa6";
 import avatar from "@images/avatar.png";
 import { formatDate } from "@/utils/FormatDate";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 type LatestThread = {
   id: number;
@@ -64,13 +65,32 @@ const Forum = async ({ categoryId }: { categoryId: number }) => {
               {forum.latestThread ? (
                 <>
                   <div className="flex items-center">
-                    <Image
+                    {/* <Image
                       src={forum.latestThread.avatarUrl || avatar}
                       alt="avatar"
                       width={40}
                       height={40}
                       className="h-10 w-10 rounded-full"
-                    />
+                    /> */}
+                    <Avatar className="h-10 w-10 flex-shrink-0">
+                      <AvatarImage
+                        asChild
+                        src={forum.latestThread.avatarUrl || undefined}
+                        alt={forum.latestThread.displayName}
+                      >
+                        <Image
+                          src={
+                            forum.latestThread.avatarUrl || "/placeholder.svg"
+                          }
+                          alt={forum.latestThread.displayName}
+                          width={32}
+                          height={32}
+                        />
+                      </AvatarImage>
+                      <AvatarFallback>
+                        {forum.latestThread.displayName.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
                   </div>
                   <div>
                     <div className="line-clamp-1 py-[2px] text-sm">

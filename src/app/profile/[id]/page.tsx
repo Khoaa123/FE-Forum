@@ -1,29 +1,16 @@
 "use client";
 import { Card, CardContent } from "@/components/ui/card";
-import React, { useEffect, useRef, useState } from "react";
-import Bronze from "@images/rank/bronze.png";
-import Silver from "@images/rank/silver.png";
-import Gold from "@images/rank/gold.png";
+import { useEffect, useRef, useState } from "react";
 import Diamond from "@images/rank/diamond.png";
-import Platinum from "@images/rank/platinum.png";
-import Master from "@images/rank/master.png";
-import Challenger from "@images/rank/challenger.png";
 import avatar from "@images/avatar.png";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { BsBookmarkFill, BsDot } from "react-icons/bs";
 import Link from "next/link";
-import { useUserStore } from "@/store/User";
-import { useCookies } from "next-client-cookies";
 import { toast } from "react-toastify";
-import ScreenLoading from "@/components/screenLoading/ScreenLoading";
-import LoadingProfile from "../../../../public/loading_profile.svg";
 import { formatDate, formatDateLastActivity } from "@/utils/FormatDate";
-import ScreenLoadingUserInfo from "@/components/screenLoading/ScreenLoadingUserInfo";
-import { Thread } from "@/app/thread/[id]/page";
+import type { Thread } from "@/app/thread/[id]/page";
 import { useQuery } from "@tanstack/react-query";
-import { jwtDecode } from "jwt-decode";
-import { DecodeToken } from "@/utils/UserType";
 import { getUserIdFromToken } from "@/utils/Helpers";
 import useFetchUser from "@/hooks/useFetchUser";
 import { useParams } from "next/navigation";
@@ -33,6 +20,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import ChatModal from "@/components/chatmodal/ChatModal";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 type UserInfo = {
   userName: string;
@@ -72,10 +61,13 @@ const Profile = () => {
   const [viewedThread, setViewedThread] = useState<ViewedThread[]>([]);
   const [threads, setThreads] = useState<Thread[]>([]);
   const [savedThread, setSavedThread] = useState<SavedThread[]>([]);
+  const [isChatModalOpen, setIsChatModalOpen] = useState(false);
 
   const userIdFromUrl = params.id as string;
   const userIdFromToken = getUserIdFromToken();
   const userId = userIdFromUrl || userIdFromToken;
+
+  const { data: userInfo, isLoading, isError } = useFetchUser(userId || "");
 
   const handleAvatarClick = () => {
     if (fileInputRef.current) {
@@ -105,8 +97,6 @@ const Profile = () => {
       if (res.status === 200) {
         const data = await res.json();
         toast.success("Upload avatar thành công");
-
-        useFetchUser(userId || "");
       } else {
         throw new Error("Failed to upload avatar.");
       }
@@ -115,13 +105,12 @@ const Profile = () => {
       toast.error("Failed to upload avatar.");
     } finally {
       // setIsLoading(false);
+      // useFetchUser(userId || ""); // Removed hook call from finally block
     }
   };
 
   const delay = (ms: number) =>
     new Promise((resolve) => setTimeout(resolve, ms));
-
-  const { data: userInfo, isLoading, isError } = useFetchUser(userId || "");
 
   const fetchViewedThread = async () => {
     try {
@@ -174,14 +163,16 @@ const Profile = () => {
     }
   };
 
+  const handleChatClick = () => {
+    setIsChatModalOpen(true);
+  };
+
   useEffect(() => {
     // fetchUser();
     fetchViewedThread();
     fetchThreadByUserId();
     fetchSavedThread();
   }, [userId]);
-
-  console.log("Đã lưu thread", savedThread);
 
   if (isLoading) {
     return <div>Đang test ReactQuery</div>;
@@ -190,6 +181,7 @@ const Profile = () => {
   if (isError) {
     return <div>Đã có lỗi xảy ra</div>;
   }
+
   return (
     <>
       <div className="container">
@@ -207,24 +199,30 @@ const Profile = () => {
                       className="hidden"
                       onChange={handleUpload}
                     />
-                    <Image
-                      src={userInfo?.avatarUrl || avatar}
-                      alt=""
-                      width={120}
-                      height={120}
-                      className="m-auto rounded-full md:h-[140px] md:w-[140px]"
-                    />
+                    <Avatar className="m-auto h-[120px] w-[120px] md:h-[140px] md:w-[140px]">
+                      <AvatarImage
+                        src={
+                          userInfo?.avatarUrl && userInfo.avatarUrl !== ""
+                            ? userInfo.avatarUrl
+                            : undefined
+                        }
+                        alt={userInfo?.displayName || "Avatar người dùng"}
+                      />
+                      <AvatarFallback>
+                        {userInfo?.displayName?.charAt(0) || "?"}
+                      </AvatarFallback>
+                    </Avatar>
                   </div>
                   <div className="flex flex-col items-center md:ml-48 md:block">
                     <div className="flex justify-between">
                       <p className="text-xl font-semibold">
-                        {userInfo.userName}
+                        {userInfo.displayName}
                       </p>
                     </div>
                     <div className="gap-2">
                       <span>Kim Cương</span>
                       <Image
-                        src={Diamond}
+                        src={Diamond || "/placeholder.svg"}
                         alt="rank"
                         width={40}
                         height={40}
@@ -247,7 +245,7 @@ const Profile = () => {
                       </p>
                     </div>
                   </div>
-                  {userIdFromUrl === userIdFromToken && (
+                  {userIdFromUrl === userIdFromToken ? (
                     <div className="m-auto flex-1 text-end md:m-0">
                       <Button
                         className="rounded-none bg-[#ebeced] hover:bg-transparent md:mr-5"
@@ -257,6 +255,15 @@ const Profile = () => {
                       </Button>
                       <Button className="rounded-none bg-[#ebeced] hover:bg-transparent md:mr-5">
                         Report
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="m-auto flex-1 text-end md:m-0">
+                      <Button
+                        className="rounded-none bg-[#ebeced] hover:bg-transparent md:mr-5"
+                        onClick={handleChatClick}
+                      >
+                        Chat
                       </Button>
                     </div>
                   )}
@@ -314,6 +321,7 @@ const Profile = () => {
               <CardContent className="p-0">
                 {viewedThread.map((thread) => (
                   <Link
+                    key={thread.threadId}
                     href={`/thread/${thread.threadId}`}
                     className="flex cursor-pointer gap-2 border-b border-[#b5b9bd] px-4 py-2 dark:border-[#3e4346]"
                   >
@@ -324,7 +332,7 @@ const Profile = () => {
                           alt="avatar"
                           width={45}
                           height={45}
-                          className="rounded-full"
+                          className="h-14 w-14 rounded-full"
                         />
                       </div>
                       <div>
@@ -364,6 +372,7 @@ const Profile = () => {
               <CardContent className="p-0">
                 {threads.map((thread) => (
                   <Link
+                    key={thread.id}
                     href={`/thread/${thread.id}`}
                     className="flex cursor-pointer flex-col gap-2 border-b border-[#b5b9bd] px-4 py-2 dark:border-[#3e4346]"
                   >
@@ -412,6 +421,7 @@ const Profile = () => {
               <CardContent className="p-0">
                 {savedThread.map((thread) => (
                   <Link
+                    key={thread.id}
                     href={`/thread/${thread.id}`}
                     className="flex cursor-pointer flex-col gap-2 border-b border-[#b5b9bd] px-4 py-2 dark:border-[#3e4346]"
                   >
@@ -479,6 +489,20 @@ const Profile = () => {
           )}
         </div>
       </div>
+
+      {/* Chat Modal */}
+      {userInfo && (
+        <ChatModal
+          isOpen={isChatModalOpen}
+          onClose={() => setIsChatModalOpen(false)}
+          targetUser={{
+            id: userId || "",
+            displayName: userInfo.displayName,
+            avatarUrl:
+              userInfo.avatarUrl || "/placeholder.svg?height=40&width=40",
+          }}
+        />
+      )}
     </>
   );
 };

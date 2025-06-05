@@ -16,6 +16,8 @@ import { IoMdTime } from "react-icons/io";
 import avatar from "@images/avatardefault.png";
 import { getUserIdFromToken } from "@/utils/Helpers";
 import useFetchUser from "@/hooks/useFetchUser";
+import Link from "next/link";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 const SkeletonLoader = () => {
   return (
@@ -128,45 +130,64 @@ const ThreadComponent = () => {
           </div>
           <div className="my-4">
             {pageNumber === 1 && (
-              <Card className="my-2 overflow-hidden rounded-none border-none">
-                <CardContent className="grid gap-5 p-0 lg:flex lg:gap-0">
-                  <div className="relative flex items-center gap-2 bg-stone-100 p-3 dark:bg-stone-900 lg:w-[150px] lg:flex-col">
-                    <Image
-                      src={thread.avatarUrl || avatar}
-                      alt="avatar"
-                      width={100}
-                      height={100}
-                      className="h-16 w-16 rounded-full lg:h-24 lg:w-24"
-                    />
-                    <div className="w-full break-words">
-                      <p className="text-center">{thread.displayName}</p>
-                      <Button className="mt-1 w-full rounded-sm border border-sky-400 bg-transparent shadow-none hover:bg-transparent">
-                        <span>Chủ thớt</span>
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="flex flex-1 flex-col p-3">
-                    <div className="flex items-center justify-between border-b border-[#d3d5d7] pb-1 text-[13.5px] text-gray-400 dark:border-gray-600">
-                      <p>{formatDate(thread.createdAt)}</p>
-                    </div>
-                    <div className="py-2">
-                      <div
-                        className="text-black dark:text-gray-400"
-                        dangerouslySetInnerHTML={{ __html: thread.content }}
-                      ></div>
-                    </div>
-                    {userInfo && (
-                      <div className="mt-auto flex items-center justify-between">
-                        <p>Report</p>
-                        <div className="flex items-center gap-2">
-                          <BsReply />
-                          <p>Reply</p>
-                        </div>
+              <Link href={`/profile/${thread.userId}`}>
+                <Card className="my-2 overflow-hidden rounded-none border-none">
+                  <CardContent className="grid gap-5 p-0 lg:flex lg:gap-0">
+                    <div className="relative flex items-center gap-2 bg-stone-100 p-3 dark:bg-stone-900 lg:w-[150px] lg:flex-col">
+                      {/* <Image
+                        src={thread.avatarUrl || avatar}
+                        alt="avatar"
+                        width={100}
+                        height={100}
+                        className="h-16 w-16 rounded-full lg:h-24 lg:w-24"
+                      /> */}
+                      <Avatar className="h-16 w-16 flex-shrink-0">
+                        <AvatarImage
+                          asChild
+                          src={thread.avatarUrl || undefined}
+                          alt={thread.displayName}
+                        >
+                          <Image
+                            src={thread.avatarUrl || "/placeholder.svg"}
+                            alt={thread.displayName}
+                            width={32}
+                            height={32}
+                          />
+                        </AvatarImage>
+                        <AvatarFallback>
+                          {thread.displayName.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="w-full break-words">
+                        <p className="text-center">{thread.displayName}</p>
+                        <Button className="mt-1 w-full rounded-sm border border-sky-400 bg-transparent shadow-none hover:bg-transparent">
+                          <span>Chủ thớt</span>
+                        </Button>
                       </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+                    </div>
+                    <div className="flex flex-1 flex-col p-3">
+                      <div className="flex items-center justify-between border-b border-[#d3d5d7] pb-1 text-[13.5px] text-gray-400 dark:border-gray-600">
+                        <p>{formatDate(thread.createdAt)}</p>
+                      </div>
+                      <div className="py-2">
+                        <div
+                          className="text-black dark:text-gray-400"
+                          dangerouslySetInnerHTML={{ __html: thread.content }}
+                        ></div>
+                      </div>
+                      {userInfo && (
+                        <div className="mt-auto flex items-center justify-between">
+                          <p>Report</p>
+                          <div className="flex items-center gap-2">
+                            <BsReply />
+                            <p>Reply</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
             )}
             <div className="my-2 h-[0.1px] w-full bg-teal-100 dark:bg-[#44494c]"></div>
             <CommentThread thread={thread} />

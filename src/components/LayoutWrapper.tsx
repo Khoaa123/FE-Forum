@@ -14,6 +14,7 @@ export default function LayoutWrapper({
 }) {
   const pathname = usePathname();
   const isDashboardRoute = pathname.startsWith("/dashboard");
+  const isChatRoute = pathname.startsWith("/chat");
 
   return (
     <div className="flex h-screen flex-col">
@@ -23,7 +24,7 @@ export default function LayoutWrapper({
         enableSystem
         disableTransitionOnChange
       >
-        {!isDashboardRoute && <Header />}
+        {!isDashboardRoute && !isChatRoute && <Header />}
         <ProgressBarProvider>{children}</ProgressBarProvider>
         <ToastContainer closeOnClick draggable />
       </ThemeProvider>

@@ -15,6 +15,7 @@ import { formatDate } from "@/utils/FormatDate";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { getUserIdFromToken } from "@/utils/Helpers";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 type Thread = {
   id: number;
@@ -182,13 +183,30 @@ const ForumDetail = ({ params }: { params: { id: number } }) => {
                   >
                     <div className="col-span-4 flex gap-3">
                       <div className="flex items-center">
-                        <Image
+                        {/* <Image
                           src={thread.avatarUrl || avatar}
                           alt="avatar"
                           width={50}
                           height={50}
-                          className="rounded-full"
-                        />
+                          className="h-12 w-12 rounded-full"
+                        /> */}
+                        <Avatar className="h-8 w-8 flex-shrink-0">
+                          <AvatarImage
+                            asChild
+                            src={thread.avatarUrl || undefined}
+                            alt={thread.displayName}
+                          >
+                            <Image
+                              src={thread.avatarUrl || "/placeholder.svg"}
+                              alt={thread.displayName}
+                              width={32}
+                              height={32}
+                            />
+                          </AvatarImage>
+                          <AvatarFallback>
+                            {thread.displayName.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
                       </div>
                       <div>
                         <div className="line-clamp-1 py-[2px] text-[16px]">

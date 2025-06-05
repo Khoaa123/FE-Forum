@@ -9,6 +9,7 @@ import avatar from "@images/avatardefault.png";
 import { BsDot } from "react-icons/bs";
 import { ScrollArea } from "../ui/scroll-area";
 import { formatDate } from "@/utils/FormatDate";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 type Reaction = {
   id: number;
@@ -134,13 +135,32 @@ const ReactComment = ({ reactions }: ReactCommentProps) => {
                 key={index}
               >
                 <div className="flex items-center gap-3 p-3">
-                  <Image
+                  {/* <Image
                     src={reaction.avatarUrl || avatar}
                     alt=""
                     width={100}
                     height={100}
                     className="h-16 w-16 rounded-full lg:h-12 lg:w-12"
-                  />
+                  /> */}
+
+                  <Avatar className="flex-shrink-0">
+                    <AvatarImage
+                      asChild
+                      src={reaction.avatarUrl || undefined}
+                      alt={reaction.userName}
+                    >
+                      <Image
+                        src={reaction.avatarUrl || "/placeholder.svg"}
+                        alt={reaction.userName}
+                        width={100}
+                        height={100}
+                        className="h-10 w-10 rounded-full lg:h-12 lg:w-12"
+                      />
+                    </AvatarImage>
+                    <AvatarFallback>
+                      {reaction.userName.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
 
                   <div>
                     <p className="font-semibold text-sky-800 dark:text-sky-300">

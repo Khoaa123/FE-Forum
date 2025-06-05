@@ -6,6 +6,7 @@ import Link from "next/link";
 import Forum from "../forum/Forum";
 import { Thread } from "@/app/thread/[id]/page";
 import { formatDate, formatDateLastActivity } from "@/utils/FormatDate";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 type Category = {
   id: number;
@@ -71,13 +72,30 @@ const HomePage = async () => {
                 {threads.map((thread) => (
                   <div className="flex gap-2 px-4 py-1" key={thread.id}>
                     <div className="flex-shrink-0">
-                      <Image
+                      {/* <Image
                         src={avatar}
                         alt="avatar"
                         width={30}
                         height={30}
                         className="mt-1 rounded-full"
-                      />
+                      /> */}
+                      <Avatar className="h-8 w-8 flex-shrink-0">
+                        <AvatarImage
+                          asChild
+                          src={thread.avatarUrl || undefined}
+                          alt={thread.displayName}
+                        >
+                          <Image
+                            src={thread.avatarUrl || "/placeholder.svg"}
+                            alt={thread.displayName}
+                            width={32}
+                            height={32}
+                          />
+                        </AvatarImage>
+                        <AvatarFallback>
+                          {thread.displayName.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
                     </div>
                     <Link href={`/thread/${thread.id}`} className="text-sm">
                       <p className="line-clamp-2 cursor-pointer text-blue-500 hover:text-amber-500 hover:underline">
@@ -103,13 +121,30 @@ const HomePage = async () => {
                 {trendingThreads.map((thread) => (
                   <div className="flex gap-2 px-4 py-1">
                     <div className="flex-shrink-0">
-                      <Image
-                        src={avatar}
+                      {/* <Image
+                        src={thread.avatarUrl || avatar}
                         alt="avatar"
                         width={30}
                         height={30}
                         className="mt-1 rounded-full"
-                      />
+                      /> */}
+                      <Avatar className="h-8 w-8 flex-shrink-0">
+                        <AvatarImage
+                          asChild
+                          src={thread.avatarUrl || undefined}
+                          alt={thread.displayName}
+                        >
+                          <Image
+                            src={thread.avatarUrl || "/placeholder.svg"}
+                            alt={thread.displayName}
+                            width={32}
+                            height={32}
+                          />
+                        </AvatarImage>
+                        <AvatarFallback>
+                          {thread.displayName.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
                     </div>
                     <Link href={`/thread/${thread.id}`} className="text-sm">
                       {" "}
